@@ -165,7 +165,7 @@ data$Group<-sample(c("High","Low"),nrow(data),replace = T)
 data$Group<-ifelse(data$MRscore>=as.numeric(summary(surv_cut)[1]),"High","Low")
 fit<-survfit(Surv(PFStime,PFS) ~ Group,
              data = data)
-S1D<-ggsurvplot( fit,
+S1E<-ggsurvplot( fit,
                data=data,
                pval.method = T,combine = F,
                ggtheme = theme(axis.title = element_text(size = 8),
@@ -188,11 +188,13 @@ S1D<-ggsurvplot( fit,
                #surv.median.line = "hv",
                risk.table.y.text.col = T,
                risk.table.y.text = T )
+## -------- S1E ---------
+S1E
 
 # --------------- get effective MITAgenes, n =12 --------------
-load("./data/1.MRgenes_DEGs_allDatasets.Rdata")
+load("./data/5.MRgenes_DEGs_allDatasets.Rdata")
 vennlist<-list(
-  Anti_tumor=unique(c(MRgenes$Response2Tumor$TCGA$Gene,
+  Anti_tumor =unique(c(MRgenes$Response2Tumor$TCGA$Gene,
                       MRgenes$Response2Tumor$LUAD$Gene,
                       MRgenes$Response2Tumor$PAAD$Gene)),
   Anti_microbe=unique(c(MRgenes$Response2Microbes$Bacterial_infection$Gene,
