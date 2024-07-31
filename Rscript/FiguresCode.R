@@ -129,7 +129,7 @@ plot(roc2, lwd = 3, add=TRUE, lty=3, col = "#377F5B",
      auc.polygon=T,
      max.auc.polygon=F,auc.polygon.col=alpha("gray",alpha=0.1), 
      print.thres=F)
-legend(0.7,0.25, 
+legend(0.85,0.5, 
        legend = c(paste0("HC-Other: AUC = ",auc1), 
                   paste0( "Vir-HC-Other: AUC = ",auc3),
                   paste0("Bac-HC-Other: AUC = ",auc2)),
@@ -153,7 +153,7 @@ S1D<-forest_model(coxfit2,factor_separate_line=T,
                   theme = theme_forest())
 ## -------- S1D ---------
 S1D
-##' Fig.S1E-G：MITAscore for ICI response
+##' Fig.S1E-H：MITAscore for ICI response
  ### -------- S1E ---------
 score<-MITAscore$MITAscore
 meta<-fread("./data/4.SYSUCC_GC_cli.csv",data.table = F)
@@ -178,14 +178,14 @@ S1E<-ggsurvplot(fit,data=data,
                surv.median.line = "hv",
                risk.table.y.text.col = T,
                risk.table.y.text = FALSE,
-               risk.table = TRUE, legend.labs = c("High", "Low"),
+               risk.table = F, legend.labs = c("High", "Low"),
                title = "ICIgc_SYSUCC",xlab="Time (Days)",ylab="Progression-free survival",
                palette = c("#BA0F20", "#1A128A"),
                legend.title="MITAscore");S1E
 
 
 ### -------- S1F ---------
-data<-fread("./data/ICI_mlanoma_PRJEB23709_MITAscore.csv",data.table = F)
+data<-fread("./data/5.ICI_mlanoma_PRJEB23709_MITAscore.csv",data.table = F)
 table(data$Treatment)
 data$Treatment=factor(data$Treatment,levels = c("PRE","EDT"))
 ptStat<-data%>%group_by(data$Patient)%>%summarise(N=n())%>%filter(N==2)
@@ -217,8 +217,29 @@ S1G<-ggsurvplot( fit,facet.by = "Treatment",data=data,
                  palette = c("#BA0F20", "#1A128A"),
                  legend.title="MITAscore");S1G
 
+data<-fread("./data/6.ICIgbm_PRJNA482620_MITAscore.csv",data.table = F)
+data$OS<-ifelse(data$vital.status=="Alive",0,1)
+data$OStime<-data$overall.survival..days.
+data$Group<-ifelse(data$MITAscore>=median(data$MITAscore),"High","Low")
+fit<-survfit(Surv(OStime,OS) ~ Group,
+             data = data)
+### -------- S1H ---------
+S1H<-ggsurvplot( fit,data=data,
+                 size =.5,pval = TRUE,pval.size = 3, 
+                 pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
+                 tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
+                 ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
+                 font.family = "Arial", 
+                 risk.table.col = "strata",
+                 surv.median.line = "hv",
+                 risk.table.y.text.col = T,
+                 risk.table.y.text = T,
+                 risk.table = F, legend.labs = c("High", "Low"),
+                 title = "ICIgbm_PRJNA482620",xlab="Time (Days)",ylab="Overall Survival",
+                 palette = c("#BA0F20", "#1A128A"),
+                 legend.title="MITAscore");S1H
 # --------------- get effective MITAgenes, n =12 --------------
-load("./data/5.MRgenes_DEGs_allDatasets.Rdata")
+load("./data/7.MRgenes_DEGs_allDatasets.Rdata")
 vennlist<-list(
   Anti_tumor =unique(c(MRgenes$Response2Tumor$TCGA$Gene,
                       MRgenes$Response2Tumor$LUAD$Gene,
