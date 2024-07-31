@@ -1,10 +1,13 @@
 # ------------- requires -------------------
 library(data.table)
 library(ggsci)
+library(ggthemes)
 library(tidyverse)
 library(dplyr)
 library(Vennerable)
 library(DESeq2)
+library(pcutils)
+library(ggstatsplot)
 library(ggpubr)
 library(randomForest)
 library(pROC)
@@ -58,7 +61,7 @@ my_comparisons<-list( c("Healthy", "Bacterial_infection"),
                       c("Viral_infection", "Other_infection"),
                       c("Bacterial_infection", "Other_infection"))
 p<-fun_to_boxplot(data,group = "Group",variable = "MITAscore",comparisons = my_comparisons)
-S1A <-p+scale_fill_manual(values = c("#0E3BF0","#AFFFDF","#377F5B","#D72323"))
+S1A <-p+scale_fill_manual(values = c("#0E3BF0","#D72323","#377F5B","#AFFFDF"))
 ## -------- S1A ---------
 S1A
 ###' Random forest
@@ -112,25 +115,25 @@ auc_res<-data.frame("HC vs Other"=auc1,
                     "Bac vs HC vs Other"=auc3)
 
 ## -------- S1B ---------
-plot(roc1, lwd = 3, col = "red",print.auc=F, colorize = F,
+plot(roc1, lwd = 3, col = "#0E3BF0",print.auc=F, colorize = F,
      auc.polygon=T,
-     max.auc.polygon=F,auc.polygon.col=alpha("lightcoral",alpha=0.1),
+     max.auc.polygon=F,auc.polygon.col=alpha("lightblue1",alpha=0.1),
      print.thres=F,main='RF_ROC')
-plot(roc2, lwd = 3, add=TRUE, lty=2, col = "darkorange1",
+plot(roc3, lwd = 3, add=TRUE, lty=2, col = "#D72323",
      print.auc=F, 
      auc.polygon=TRUE, 
-     max.auc.polygon=F,auc.polygon.col=alpha("darkorange1",alpha=0.1), 
+     max.auc.polygon=F,auc.polygon.col=alpha("red",alpha=0.1), 
      print.thres=F)
-plot(roc3, lwd = 3, add=TRUE, lty=2, col = "blue",
+plot(roc2, lwd = 3, add=TRUE, lty=3, col = "#377F5B",
      print.auc=F, 
      auc.polygon=T,
-     max.auc.polygon=F,auc.polygon.col=alpha("lightblue1",alpha=0.4), 
+     max.auc.polygon=F,auc.polygon.col=alpha("gray",alpha=0.1), 
      print.thres=F)
 legend(0.7,0.25, 
        legend = c(paste0("HC-Other: AUC = ",auc1), 
-                  paste0( "Vir-HC-Other: AUC = ",auc2),
-                  paste0("Bac-HC-Other: AUC = ",auc3)),
-       lty = c(2,2,2), col = c("red","darkorange","blue"))
+                  paste0( "Vir-HC-Other: AUC = ",auc3),
+                  paste0("Bac-HC-Other: AUC = ",auc2)),
+       lty = c(1,2,3), col = c("#0E3BF0","#D72323","#377F5B"))
 
 ##' Fig.S1C: MITAscore for response to tumor
 data<-fread("./data/3.TCGA_MITAscore_meta.csv",data.table = F)
@@ -150,7 +153,8 @@ S1D<-forest_model(coxfit2,factor_separate_line=T,
                   theme = theme_forest())
 ## -------- S1D ---------
 S1D
-##' Fig.S1D：MITAscore for ICI response
+##' Fig.S1E-G：MITAscore for ICI response
+ ### -------- S1E ---------
 score<-MITAscore$MITAscore
 meta<-fread("./data/4.SYSUCC_GC_cli.csv",data.table = F)
 data<-merge(score,meta,by="sampleID")
@@ -158,38 +162,60 @@ surv_cut <- surv_cutpoint(
   data,
   time = "PFStime",
   event = "PFS",
-  variables = c("MRscore")
+  variables = c("MITAscore")
 )
-summary(surv_cut)
 data$Group<-sample(c("High","Low"),nrow(data),replace = T)
-data$Group<-ifelse(data$MRscore>=as.numeric(summary(surv_cut)[1]),"High","Low")
+data$Group<-ifelse(data$MITAscore>=as.numeric(summary(surv_cut)[1]),"High","Low")
 fit<-survfit(Surv(PFStime,PFS) ~ Group,
              data = data)
-S1E<-ggsurvplot( fit,
-               data=data,
-               pval.method = T,combine = F,
-               ggtheme = theme(axis.title = element_text(size = 8),
-                               axis.text = element_text(size = 8),
-                               title = element_text(size = 8),
-                               text = element_text(size = 8),
-                               axis.line = element_line(size=0.2),
-                               panel.background = element_rect(fill = "white")),
-               tables.theme = theme(axis.title = element_text(size = 6),
-                                    axis.text = element_text(size = 6),
-                                    title = element_text(size = 6),
-                                    text = element_text(size = 6),
-                                    panel.background = element_blank()),
-               risk.table = TRUE,
-               pval = TRUE,
-               title = "PFS",
-               palette = c("darkorange","darkblue"),
-               legend.title="MITAscore",
+S1E<-ggsurvplot(fit,data=data,
+               size =.5,pval = TRUE,pval.size = 3, 
+               pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
+               tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
+               ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
+               font.family = "Arial", 
                risk.table.col = "strata",
-               #surv.median.line = "hv",
+               surv.median.line = "hv",
                risk.table.y.text.col = T,
-               risk.table.y.text = T )
-## -------- S1E ---------
-S1E
+               risk.table.y.text = FALSE,
+               risk.table = TRUE, legend.labs = c("High", "Low"),
+               title = "ICIgc_SYSUCC",xlab="Time (Days)",ylab="Progression-free survival",
+               palette = c("#BA0F20", "#1A128A"),
+               legend.title="MITAscore");S1E
+
+
+### -------- S1F ---------
+data<-fread("./data/ICI_mlanoma_PRJEB23709_MITAscore.csv",data.table = F)
+table(data$Treatment)
+data$Treatment=factor(data$Treatment,levels = c("PRE","EDT"))
+ptStat<-data%>%group_by(data$Patient)%>%summarise(N=n())%>%filter(N==2)
+paired<-data[which(data$Patient%in%ptStat$`data$Patient`),]
+S1F=group_box(tab = paired[c("MITAscore")], group = "Treatment", paired = TRUE,
+             metadata =paired, p_value1 = "wilcox.test",trend_line = TRUE)+
+  ggtitle("ICImlanoma_PRJEB23709")+
+  theme_few(base_size = 10)+
+  scale_color_brewer(palette = "Set1");S1F
+
+data$Group<-sample(c("High","Low"),nrow(data),replace = T)
+data$Group<-ifelse(data$MITAscore>=median(data$MITAscore),"High","Low")
+fit<-survfit(Surv(OStime,OS) ~ Group,
+             data = data)
+
+### -------- S1G ---------
+S1G<-ggsurvplot( fit,facet.by = "Treatment",data=data,
+                 size =.5,pval = TRUE,pval.size = 3, 
+                 pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
+                 tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
+                 ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
+                 font.family = "Arial", 
+                 risk.table.col = "strata",
+                 surv.median.line = "hv",
+                 risk.table.y.text.col = T,
+                 risk.table.y.text = FALSE,
+                 risk.table = TRUE, legend.labs = c("High", "Low"),
+                 title = "ICImlanoma_PRJEB23709",xlab="Time (Days)",ylab="Overall Survival",
+                 palette = c("#BA0F20", "#1A128A"),
+                 legend.title="MITAscore");S1G
 
 # --------------- get effective MITAgenes, n =12 --------------
 load("./data/5.MRgenes_DEGs_allDatasets.Rdata")
