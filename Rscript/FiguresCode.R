@@ -29,6 +29,7 @@ vennlist<-list(Response.to.external.biotic.stimulus=ori_MITAgenes$Response.to.ex
 
 myve<-Venn(vennlist)
 plot(myve, doWeights = F)
+
 # ----------- MITA score example：ICI_GC_SYSUCC data ----------------------- 
 load("./data/1.ICIgc_sysucc_files.Rdata")
 dds <- DESeqDataSetFromMatrix(countData = ICIgc_sysucc_files$expr,
@@ -239,20 +240,20 @@ S1H<-ggsurvplot( fit,data=data,
                  palette = c("#BA0F20", "#1A128A"),
                  legend.title="MITAscore");S1H
 # --------------- get effective MITAgenes, n =12 --------------
-load("./data/7.MRgenes_DEGs_allDatasets.Rdata")
+load("./data/7.MITAgenes_allDatasets.Rdata")
 vennlist<-list(
-  Anti_tumor =unique(c(MRgenes$Response2Tumor$TCGA$Gene,
-                      MRgenes$Response2Tumor$LUAD$Gene,
-                      MRgenes$Response2Tumor$PAAD$Gene)),
-  Anti_microbe=unique(c(MRgenes$Response2Microbes$Bacterial_infection$Gene,
-                        MRgenes$Response2Microbes$Viral_infection$Gene,
-                        MRgenes$Response2Microbes$Other$Gene)),
-  ICI=unique(c(MRgenes$Response2ICI$ICIgc_SYSUCC$Gene,
-               MRgenes$Response2ICI$ICIgbm_ZhaoJ$Gene,
-               MRgenes$Response2ICI$ICImelanoma_GideTN$Gene,
-               MRgenes$Response2ICI$ICImelanoma_Beth$Gene,
-               MRgenes$Response2ICI$ICImelanoma_MosheCD45$Gene,
-               MRgenes$Response2ICI$ICImelanoma_MosheCD8T$Gene)))
+  Anti_tumor =unique(c(MITAgenes$Response2Tumor$TCGA$Gene,
+                      MITAgenes$Response2Tumor$LUAD$Gene,
+                      MITAgenes$Response2Tumor$PAAD$Gene)),
+  Anti_microbe=unique(c(MITAgenes$Response2Microbes$Bacterial_infection$Gene,
+                        MITAgenes$Response2Microbes$Viral_infection$Gene,
+                        MITAgenes$Response2Microbes$Other$Gene)),
+  ICI=unique(c(MITAgenes$Response2ICI$ICIgc_SYSUCC$Gene,
+               MITAgenes$Response2ICI$ICIgbm_ZhaoJ$Gene,
+               MITAgenes$Response2ICI$ICImelanoma_GideTN$Gene,
+               MITAgenes$Response2ICI$ICImelanoma_Beth$Gene,
+               MITAgenes$Response2ICI$ICImelanoma_MosheCD45$Gene,
+               MITAgenes$Response2ICI$ICImelanoma_MosheCD8T$Gene)))
 
 myve<-Venn(vennlist)
 plot(myve, doWeights = T)
