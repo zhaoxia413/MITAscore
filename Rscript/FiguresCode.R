@@ -155,7 +155,40 @@ S1D<-forest_model(coxfit2,factor_separate_line=T,
 ## -------- S1D ---------
 S1D
 ##' Fig.S1E-H：MITAscore for ICI response
- ### -------- S1E ---------
+### -------- S1E-F:  ---------
+data<-fread("./data/5.ICI_melanoma_PRJEB23709_MITAscore.csv",data.table = F)
+table(data$Treatment)
+data$Treatment=factor(data$Treatment,levels = c("PRE","EDT"))
+ptStat<-data%>%group_by(data$Patient)%>%summarise(N=n())%>%filter(N==2)
+paired<-data[which(data$Patient%in%ptStat$`data$Patient`),]
+S1E=group_box(tab = paired[c("MITAscore")], group = "Treatment", paired = TRUE,
+             metadata =paired, p_value1 = "wilcox.test",trend_line = TRUE)+
+  ggtitle("ICImelanoma_PRJEB23709")+
+  theme_few(base_size = 10)+
+  scale_color_brewer(palette = "Set1");S1E
+
+### -------- S1F ---------
+data$Group<-sample(c("High","Low"),nrow(data),replace = T)
+data$Group<-ifelse(data$MITAscore>=median(data$MITAscore),"High","Low")
+fit<-survfit(Surv(OStime,OS) ~ Group,
+             data = data)
+S1F<-ggsurvplot( fit,facet.by = "Treatment",data=data,
+                 size =.5,pval = TRUE,pval.size = 3, 
+                 pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
+                 tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
+                 ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
+                 font.family = "Arial", 
+                 risk.table.col = "strata",
+                 surv.median.line = "hv",
+                 risk.table.y.text.col = T,
+                 risk.table.y.text = T,
+                 risk.table = TRUE, legend.labs = c("High", "Low"),
+                 title = "ICImelanoma_PRJEB23709",xlab="Time (Days)",ylab="Overall Survival",
+                 palette = c("#BA0F20", "#1A128A"),
+                 legend.title="MITAscore");S1F
+
+
+### -------- S1G: SYUSCC GC cohort ---------
 score<-MITAscore$MITAscore
 meta<-fread("./data/4.SYSUCC_GC_cli.csv",data.table = F)
 data<-merge(score,meta,by="sampleID")
@@ -169,62 +202,28 @@ data$Group<-sample(c("High","Low"),nrow(data),replace = T)
 data$Group<-ifelse(data$MITAscore>=as.numeric(summary(surv_cut)[1]),"High","Low")
 fit<-survfit(Surv(PFStime,PFS) ~ Group,
              data = data)
-S1E<-ggsurvplot(fit,data=data,
-               size =.5,pval = TRUE,pval.size = 3, 
-               pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
-               tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
-               ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
-               font.family = "Arial", 
-               risk.table.col = "strata",
-               surv.median.line = "hv",
-               risk.table.y.text.col = T,
-               risk.table.y.text = FALSE,
-               risk.table = F, legend.labs = c("High", "Low"),
-               title = "ICIgc_SYSUCC",xlab="Time (Days)",ylab="Progression-free survival",
-               palette = c("#BA0F20", "#1A128A"),
-               legend.title="MITAscore");S1E
+S1G<-ggsurvplot(fit,data=data,
+                size =.5,pval = TRUE,pval.size = 3, 
+                pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
+                tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
+                ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
+                font.family = "Arial", 
+                risk.table.col = "strata",
+                surv.median.line = "hv",
+                risk.table.y.text.col = T,
+                risk.table.y.text = FALSE,
+                risk.table = T, legend.labs = c("High", "Low"),
+                title = "ICIgc_SYSUCC",xlab="Time (Days)",ylab="Progression-free survival",
+                palette = c("#BA0F20", "#1A128A"),
+                legend.title="MITAscore");S1G
 
-
-### -------- S1F ---------
-data<-fread("./data/5.ICI_mlanoma_PRJEB23709_MITAscore.csv",data.table = F)
-table(data$Treatment)
-data$Treatment=factor(data$Treatment,levels = c("PRE","EDT"))
-ptStat<-data%>%group_by(data$Patient)%>%summarise(N=n())%>%filter(N==2)
-paired<-data[which(data$Patient%in%ptStat$`data$Patient`),]
-S1F=group_box(tab = paired[c("MITAscore")], group = "Treatment", paired = TRUE,
-             metadata =paired, p_value1 = "wilcox.test",trend_line = TRUE)+
-  ggtitle("ICImlanoma_PRJEB23709")+
-  theme_few(base_size = 10)+
-  scale_color_brewer(palette = "Set1");S1F
-
-data$Group<-sample(c("High","Low"),nrow(data),replace = T)
-data$Group<-ifelse(data$MITAscore>=median(data$MITAscore),"High","Low")
-fit<-survfit(Surv(OStime,OS) ~ Group,
-             data = data)
-
-### -------- S1G ---------
-S1G<-ggsurvplot( fit,facet.by = "Treatment",data=data,
-                 size =.5,pval = TRUE,pval.size = 3, 
-                 pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
-                 tables.theme = theme_cleantable(base_size=8, base_family = "Arial"),
-                 ggtheme = theme_classic2(base_size=8, base_family = "Arial"),
-                 font.family = "Arial", 
-                 risk.table.col = "strata",
-                 surv.median.line = "hv",
-                 risk.table.y.text.col = T,
-                 risk.table.y.text = FALSE,
-                 risk.table = TRUE, legend.labs = c("High", "Low"),
-                 title = "ICImlanoma_PRJEB23709",xlab="Time (Days)",ylab="Overall Survival",
-                 palette = c("#BA0F20", "#1A128A"),
-                 legend.title="MITAscore");S1G
-
+### -------- S1H:PRJNA482620 GBM cohort---------
 data<-fread("./data/6.ICIgbm_PRJNA482620_MITAscore.csv",data.table = F)
 data$OS<-ifelse(data$vital.status=="Alive",0,1)
 data$OStime<-data$overall.survival..days.
 data$Group<-ifelse(data$MITAscore>=median(data$MITAscore),"High","Low")
 fit<-survfit(Surv(OStime,OS) ~ Group,
              data = data)
-### -------- S1H ---------
 S1H<-ggsurvplot( fit,data=data,
                  size =.5,pval = TRUE,pval.size = 3, 
                  pval.coord=c(0.8,0.2),pval.method=F,pval.method.coord=c(0.05,0.3), 
@@ -235,7 +234,7 @@ S1H<-ggsurvplot( fit,data=data,
                  surv.median.line = "hv",
                  risk.table.y.text.col = T,
                  risk.table.y.text = T,
-                 risk.table = F, legend.labs = c("High", "Low"),
+                 risk.table = T, legend.labs = c("High", "Low"),
                  title = "ICIgbm_PRJNA482620",xlab="Time (Days)",ylab="Overall Survival",
                  palette = c("#BA0F20", "#1A128A"),
                  legend.title="MITAscore");S1H
